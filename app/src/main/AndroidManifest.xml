@@ -19,7 +19,7 @@
         </activity>
         <activity android:name=".RegisterActivity">
         </activity>
-        <activity android:name=".UserAreaActivity">
+        <activity android:name=".ui.UserActivity">
         </activity>
     </application>
 
