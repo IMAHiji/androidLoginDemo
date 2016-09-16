@@ -1,8 +1,7 @@
-package com.lukeaskins.logindemo;
+package com.lukeaskins.logindemo.ui;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.v7.app.AppCompatActivity;
@@ -14,8 +13,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONException;
-import org.w3c.dom.Text;
+import com.lukeaskins.logindemo.R;
+import com.lukeaskins.logindemo.RegisterActivity;
+import com.lukeaskins.logindemo.user.User;
 
 import java.io.IOException;
 
@@ -40,6 +40,10 @@ public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = "LOGIN_ACTIVITY";
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    public User user = new User();
+    private String sessionEmail;
+    private String sessionPassword;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,7 +77,9 @@ public class LoginActivity extends AppCompatActivity {
         String baseUrl = "https://fierce-island-9273.herokuapp.com/users/sign_in";
         Context context = this.getApplicationContext();
         String email = mUsername.getText().toString();
-        String password = mPassword.getText().toString();
+        final String password = mPassword.getText().toString();
+        sessionEmail = mUsername.getText().toString();
+        sessionPassword = mPassword.getText().toString();
 
 
 
@@ -104,11 +110,11 @@ public class LoginActivity extends AppCompatActivity {
                     try {
                         String jsonData = response.body().string();
                         Headers responseHeaders = response.headers();
-
-
-
+                        String token = response.header("Access-Token");
+                        populateUserProfile(sessionEmail, sessionPassword, token);
+                        testUserProfile();
 //                        Log.v(TAG, "Response  --> BODY" + jsonData);
-                        Log.v(TAG, "Response  --> ACCESS TOKEN : " + response.header("Access-Token"));
+//                        Log.v(TAG, "Response  --> ACCESS TOKEN : " + response.header("Access-Token"));
                         if (response.isSuccessful()) {
                             Log.v(TAG, "SUCCESSFUL RESPONSE");
                         }
@@ -129,12 +135,26 @@ public class LoginActivity extends AppCompatActivity {
 
         //Catch errors
 
-        //
+
+    }
+
+    private void testUserProfile() {
+        Log.v(TAG, "EMAIL: "+ user.getEmail());
+        Log.v(TAG, "Password: "+ user.getPassword());
+        Log.v(TAG, "token:  "+ user.getToken());
+    }
+
+    private void populateUserProfile(String email, String password, String token) {
+        //set the username
+        user.setEmail(email);
+        //set the password
+        user.setPassword(password);
+        //set the token
+        user.setToken(token);
     }
 
     String loginJSON(String userName, String password){
         return "{\"email\": \"" + userName + "\", \"password\":\"" + password +"\"}";
-
     }
 
     private boolean isNetworkAvailable() {
@@ -148,6 +168,5 @@ public class LoginActivity extends AppCompatActivity {
 
         return isAvailable;
     }
-
 
 }
