@@ -15,20 +15,19 @@ import android.widget.Toast;
 
 import com.lukeaskins.logindemo.R;
 import com.lukeaskins.logindemo.RegisterActivity;
+import com.lukeaskins.logindemo.lib.HHApiClient;
+import com.lukeaskins.logindemo.model.UserLoginRequest;
+import com.lukeaskins.logindemo.model.UserLoginResponse;
 import com.lukeaskins.logindemo.user.User;
-
-import java.io.IOException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Headers;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 
 public class LoginActivity extends AppCompatActivity {
@@ -39,7 +38,12 @@ public class LoginActivity extends AppCompatActivity {
     @BindView(R.id.registerLink) TextView mRegisterLink;
 
     private static final String TAG = "LOGIN_ACTIVITY";
-    public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+
+
+    public static final String URL_SIGN_IN = "users/sign_in";
+    public static final String URL_BASE = "https://fierce-island-9273.herokuapp.com/";
+
+
     public User user = new User();
     private String sessionEmail;
     private String sessionPassword;
@@ -74,57 +78,48 @@ public class LoginActivity extends AppCompatActivity {
 
     public void login() {
         Log.d(TAG, "LOGIN REQUESTED");
-        String baseUrl = "https://fierce-island-9273.herokuapp.com/users/sign_in";
+
+
         Context context = this.getApplicationContext();
         String email = mUsername.getText().toString();
-        final String password = mPassword.getText().toString();
+        String password = mPassword.getText().toString();
         sessionEmail = mUsername.getText().toString();
         sessionPassword = mPassword.getText().toString();
-
-
-
-
 
 
         //Check for network availability
         if(isNetworkAvailable()){
 
             //If available, Perform Login Request
-            OkHttpClient client = new OkHttpClient();
-            String payload = loginJSON(email, password);
-            Log.v(TAG, "Network Available Beginning Request build with " + payload);
-            RequestBody body = RequestBody.create(JSON, payload);
+            Log.v(TAG, "Network Available Beginning Request build.");
+//            RequestBody body = RequestBody.create(JSON, payload);
 
-            Request request = new Request.Builder().url(baseUrl).post(body).build();
-            Call call = client.newCall(request);
-            call.enqueue(new Callback() {
+            //Start building a retrofit object.
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(URL_BASE)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+
+            //Build the service
+            HHApiClient service = retrofit.create(HHApiClient.class);
+
+            UserLoginRequest userLoginRequest = new UserLoginRequest();
+            userLoginRequest.setEmail(email);
+            userLoginRequest.setPassword(password);
+
+            Call<UserLoginResponse> userLoginResponseCall =  service.signIn(userLoginRequest);
+
+            userLoginResponseCall.enqueue(new Callback<UserLoginResponse>() {
                 @Override
-                public void onFailure(Call call, IOException e) {
-                    //Do something with a failure
-                    Log.v(TAG, "FAILIURE", e);
+                public void onResponse(Call<UserLoginResponse> call, Response<UserLoginResponse> response) {
+                    int statusCode = response.code();
+                    UserLoginResponse userLoginResponse = response.body();
+                    Log.v(TAG, "RESPONSE RECEIVED----> " + statusCode);
                 }
 
                 @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    //Do something with the response data
-                    try {
-                        String jsonData = response.body().string();
-                        Headers responseHeaders = response.headers();
-                        String token = response.header("Access-Token");
-                        populateUserProfile(sessionEmail, sessionPassword, token);
-                        testUserProfile();
-//                        Log.v(TAG, "Response  --> BODY" + jsonData);
-//                        Log.v(TAG, "Response  --> ACCESS TOKEN : " + response.header("Access-Token"));
-                        if (response.isSuccessful()) {
-                            Log.v(TAG, "SUCCESSFUL RESPONSE");
-                        }
-                        else{
-                            Log.v(TAG, "Unsuccessful Response");
-                        }
-                    }
-                    catch (IOException e){
-                        Log.e(TAG, "IO Exception Caught", e);
-                    }
+                public void onFailure(Call<UserLoginResponse> call, Throwable t) {
+                    Log.v(TAG, "FAILURE  ----> " + t.getMessage());
                 }
             });
         }else{
@@ -168,5 +163,7 @@ public class LoginActivity extends AppCompatActivity {
 
         return isAvailable;
     }
+
+
 
 }

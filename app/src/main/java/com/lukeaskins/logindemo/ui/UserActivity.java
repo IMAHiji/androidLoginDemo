@@ -13,7 +13,7 @@ import butterknife.ButterKnife;
 public class UserActivity extends AppCompatActivity {
     @BindView(R.id.etUsername) EditText etUsername;
     @BindView(R.id.etAge) EditText etAge;
-    @BindView(R.id.tvWelcomeMessage) TextView welcomeMessage;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
