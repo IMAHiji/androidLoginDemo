@@ -16,8 +16,8 @@ import android.widget.Toast;
 import com.lukeaskins.logindemo.R;
 import com.lukeaskins.logindemo.RegisterActivity;
 import com.lukeaskins.logindemo.lib.HHApiClient;
-import com.lukeaskins.logindemo.model.UserLoginRequest;
 import com.lukeaskins.logindemo.model.UserLoginResponse;
+import com.lukeaskins.logindemo.model.UserLoginRequest;
 import com.lukeaskins.logindemo.user.User;
 
 import butterknife.BindView;
@@ -61,7 +61,6 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent registerIntent = new Intent(LoginActivity.this, RegisterActivity.class);
                 LoginActivity.this.startActivity(registerIntent);
-
             }
         });
 
@@ -72,7 +71,6 @@ public class LoginActivity extends AppCompatActivity {
                 login();
             }
         });
-
     }
 
 
@@ -91,8 +89,11 @@ public class LoginActivity extends AppCompatActivity {
         if(isNetworkAvailable()){
 
             //If available, Perform Login Request
-            Log.v(TAG, "Network Available Beginning Request build.");
+//            Log.v(TAG, "Network Available Beginning Request build.");
 //            RequestBody body = RequestBody.create(JSON, payload);
+
+//            OkHttpClient client = new OkHttpClient();
+//            client.interceptors().add(new LogJsonInterceptor());
 
             //Start building a retrofit object.
             Retrofit retrofit = new Retrofit.Builder()
@@ -100,21 +101,26 @@ public class LoginActivity extends AppCompatActivity {
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
 
-            //Build the service
-            HHApiClient service = retrofit.create(HHApiClient.class);
-
+            //Generate a login from the input data
             UserLoginRequest userLoginRequest = new UserLoginRequest();
             userLoginRequest.setEmail(email);
             userLoginRequest.setPassword(password);
 
+            //Build the service from your API Interface
+            HHApiClient service = retrofit.create(HHApiClient.class);
+            //Call your service with Retrofit: Call<your expected response class> = service.[whatever_you_named_your_endpoint_in_the_interface]
             Call<UserLoginResponse> userLoginResponseCall =  service.signIn(userLoginRequest);
 
             userLoginResponseCall.enqueue(new Callback<UserLoginResponse>() {
                 @Override
                 public void onResponse(Call<UserLoginResponse> call, Response<UserLoginResponse> response) {
+
                     int statusCode = response.code();
                     UserLoginResponse userLoginResponse = response.body();
+                    String name = userLoginResponse.getUsers().getFirstName();
                     Log.v(TAG, "RESPONSE RECEIVED----> " + statusCode);
+                    Log.v(TAG, "RESPONSE RECEIVED----> " + name);
+
                 }
 
                 @Override
@@ -127,9 +133,7 @@ public class LoginActivity extends AppCompatActivity {
             Toast.makeText(this, "NETWORK IS UNAVAILABLE", Toast.LENGTH_LONG).show();
         }
 
-
         //Catch errors
-
 
     }
 

@@ -1,16 +1,9 @@
 package com.lukeaskins.logindemo.lib;
 
-import android.widget.Button;
-import android.widget.EditText;
-
-import com.lukeaskins.logindemo.R;
-import com.lukeaskins.logindemo.model.Login;
-import com.lukeaskins.logindemo.model.UserLoginRequest;
 import com.lukeaskins.logindemo.model.UserLoginResponse;
+import com.lukeaskins.logindemo.model.UserLoginRequest;
 
-import butterknife.BindView;
 import retrofit2.Call;
-import retrofit2.Retrofit;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
 

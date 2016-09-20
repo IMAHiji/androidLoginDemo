@@ -7,10 +7,12 @@ public class UserLoginRequest {
 
 
     public String getEmail() {
+
         return email;
     }
 
     public void setEmail(String email) {
+
         this.email = email;
     }
 
@@ -19,6 +21,7 @@ public class UserLoginRequest {
     }
 
     public void setPassword(String password) {
+
         this.password = password;
     }
 
