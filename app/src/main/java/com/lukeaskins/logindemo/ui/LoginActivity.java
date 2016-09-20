@@ -87,13 +87,7 @@ public class LoginActivity extends AppCompatActivity {
 
         //Check for network availability
         if(isNetworkAvailable()){
-
             //If available, Perform Login Request
-//            Log.v(TAG, "Network Available Beginning Request build.");
-//            RequestBody body = RequestBody.create(JSON, payload);
-
-//            OkHttpClient client = new OkHttpClient();
-//            client.interceptors().add(new LogJsonInterceptor());
 
             //Start building a retrofit object.
             Retrofit retrofit = new Retrofit.Builder()
@@ -134,40 +128,17 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         //Catch errors
-
-    }
-
-    private void testUserProfile() {
-        Log.v(TAG, "EMAIL: "+ user.getEmail());
-        Log.v(TAG, "Password: "+ user.getPassword());
-        Log.v(TAG, "token:  "+ user.getToken());
-    }
-
-    private void populateUserProfile(String email, String password, String token) {
-        //set the username
-        user.setEmail(email);
-        //set the password
-        user.setPassword(password);
-        //set the token
-        user.setToken(token);
-    }
-
-    String loginJSON(String userName, String password){
-        return "{\"email\": \"" + userName + "\", \"password\":\"" + password +"\"}";
     }
 
     private boolean isNetworkAvailable() {
         ConnectivityManager manager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = manager.getActiveNetworkInfo();
+
         boolean isAvailable = false;
 
         if(networkInfo != null && networkInfo.isConnected()){
             isAvailable = true;
         }
-
         return isAvailable;
     }
-
-
-
 }
