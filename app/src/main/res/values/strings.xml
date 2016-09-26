@@ -2,5 +2,5 @@
     <string name="app_name">LoginDemo</string>
     <string name="welcome_message">Welcome</string>
     <string name="username_label">Your Username Is: </string>
-    <string name="password_label">Your Phone Number is:</string>
+    <string name="password_label">Your First <Name> </Name> is:</string>
 </resources>

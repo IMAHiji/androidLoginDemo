@@ -18,13 +18,16 @@ import com.google.gson.Gson;
 import com.lukeaskins.logindemo.R;
 import com.lukeaskins.logindemo.RegisterActivity;
 import com.lukeaskins.logindemo.lib.HHApiClient;
-import com.lukeaskins.logindemo.model.UserLoginResponse;
-import com.lukeaskins.logindemo.model.UserLoginRequest;
+import com.lukeaskins.logindemo.model.response.UserLoginResponse;
+import com.lukeaskins.logindemo.model.request.UserLoginRequest;
 import com.lukeaskins.logindemo.user.User;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+import okhttp3.Headers;
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -69,7 +72,7 @@ public class LoginActivity extends AppCompatActivity {
         mButtonLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.v(TAG, "LOGIN BUTTON CLICKED");
+                Log.d(TAG, "LOGIN BUTTON CLICKED");
                 login();
             }
         });
@@ -77,24 +80,33 @@ public class LoginActivity extends AppCompatActivity {
 
 
     public void login() {
-        Log.v(TAG, "LOGIN REQUESTED");
+        Log.d(TAG, "LOGIN REQUESTED");
         //Check if Empty
         if (isEmpty(mUsername) || isEmpty(mPassword)) {
             //If either one is empty, Tell user to enter text
             Toast.makeText(this, "Please enter your username and pasword", Toast.LENGTH_LONG).show();
         } else {
-            Log.v(TAG, "LOGIN Begins");
+            Log.d(TAG, "LOGIN Begins");
             String email = mUsername.getText().toString();
             String password = mPassword.getText().toString();
+
+
 
             //Check for network availability
             if(isNetworkAvailable()){
                 //If available, Perform Login Request
 
+                HttpLoggingInterceptor logging  = new HttpLoggingInterceptor();
+                logging.setLevel(HttpLoggingInterceptor.Level.HEADERS);
+
+                OkHttpClient.Builder httpClient = new OkHttpClient().newBuilder();
+                httpClient.addInterceptor(logging);
+
                 //Start building a retrofit object.
                 Retrofit retrofit = new Retrofit.Builder()
                         .baseUrl(URL_BASE)
                         .addConverterFactory(GsonConverterFactory.create())
+                        .client(httpClient.build())
                         .build();
 
                 //Generate a login from the input data
@@ -110,23 +122,32 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(Call<UserLoginResponse> call, Response<UserLoginResponse> response) {
 
-                        int statusCode = response.code();
+                        Headers headers = response.headers();
                         UserLoginResponse userLoginResponse = response.body();
                         String name = userLoginResponse.getUsers().getFirstName();
-                        Log.v(TAG, "RESPONSE RECEIVED----> " + statusCode);
-                        Log.v(TAG, "RESPONSE RECEIVED----> " + name);
+
+                        String token = headers.get("Access-Token");
+                        String tokenType = headers.get("Token-Type");
+                        String client = headers.get("Client");
+                        String expiry = headers.get("Expiry");
+                        String uid = headers.get("Uid");
 
                         Intent userIntent = new Intent(LoginActivity.this, UserActivity.class);
-                        userIntent.putExtra("username", userLoginResponse.getUsers().getEmail());
-                        userIntent.putExtra("phoneNumber", userLoginResponse.getUsers().getPhoneNumber());
+
+
+                        userIntent.putExtra("accessToken", token);
+                        userIntent.putExtra("tokenType", tokenType);
+                        userIntent.putExtra("client", client);
+                        userIntent.putExtra("expiry", expiry);
+                        userIntent.putExtra("uid", uid);
                         userIntent.putExtra("users", serializeBooty(userLoginResponse));
                         LoginActivity.this.startActivity(userIntent);
-                        finish();
+//                        finish();
                     }
 
                     @Override
                     public void onFailure(Call<UserLoginResponse> call, Throwable t) {
-                        Log.v(TAG, "FAILURE  ----> " + t.getMessage());
+                        Log.d(TAG, "FAILURE  ----> " + t.getMessage());
                     }
                 });
             }else{
@@ -155,9 +176,9 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private boolean isEmpty (EditText checkText){
-        Log.v(TAG, "Checking Length for text in field " );
+        Log.d(TAG, "Checking Length for text in field " );
         if(checkText.getText().toString().trim().length() == 0){
-            Log.v(TAG, "EMPTY FIELD" );
+            Log.d(TAG, "EMPTY FIELD" );
             return true;
         }else{
             return false;

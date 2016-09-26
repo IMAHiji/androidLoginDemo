@@ -1,7 +1,8 @@
-package com.lukeaskins.logindemo.model;
+package com.lukeaskins.logindemo.model.response;
 import javax.annotation.Generated;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.lukeaskins.logindemo.model.Users;
 
 @Generated("org.jsonschema2pojo")
 public class UserLoginResponse {

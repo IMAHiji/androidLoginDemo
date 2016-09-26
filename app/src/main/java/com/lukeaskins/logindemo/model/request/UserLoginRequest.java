@@ -1,4 +1,4 @@
-package com.lukeaskins.logindemo.model;
+package com.lukeaskins.logindemo.model.request;
 
 public class UserLoginRequest {
 
