@@ -1,6 +1,7 @@
 package com.lukeaskins.logindemo.ui;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,6 +16,7 @@ import com.lukeaskins.logindemo.model.response.UserLoginResponse;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
@@ -29,7 +31,7 @@ import static com.lukeaskins.logindemo.lib.HHApiClient.URL_BASE;
 public class UserActivity extends AppCompatActivity {
 
     private static final String TAG = "USER_ACTIVITY";
-
+    public String ACCESS_TOKEN;
 
 
     @BindView(R.id.userName) TextView userName;
@@ -56,18 +58,26 @@ public class UserActivity extends AppCompatActivity {
 
         userName.setText(mUsername);
         phoneNumber.setText(mPhoneNumber);
-        final String token = intent.getStringExtra("accessToken");
-        final String tokenType = intent.getStringExtra("tokenType");
-        final String client = intent.getStringExtra("client");
-        final String expiry = intent.getStringExtra("expiry");
-        final String uid = intent.getStringExtra("uid");
 
+        SharedPreferences prefs = getSharedPreferences(ACCESS_TOKEN, MODE_PRIVATE);
+
+        final String token = prefs.getString("Access-Token", null);
+        final String tokenType = prefs.getString("Token-Type", null);
+        final String client = prefs.getString("Client", null);
+        final String expiry = prefs.getString("Expiry", null);
+        final String uid = prefs.getString("Uid", null);
+
+        Log.d(TAG, "Access-Token RETRIEVED: " + token);
+        Log.d(TAG, "Token-TYPE RETRIEVED: " + tokenType);
+        Log.d(TAG, "Client RETRIEVED: " + client);
+        Log.d(TAG, "Expiry RETRIEVED: " + expiry);
+        Log.d(TAG, "Uid RETRIEVED: " + uid);
 
 
         validateToken.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "Validate Token With Interceptors Clicked" + token);
+                Log.d(TAG, "Validate Token With SharedPrefs Clicked  --> " + token);
 
                 HttpLoggingInterceptor logging  = new HttpLoggingInterceptor();
                 logging.setLevel(HttpLoggingInterceptor.Level.HEADERS);
@@ -87,6 +97,8 @@ public class UserActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(Call<UserLoginResponse> call, Response<UserLoginResponse> response) {
                         int statusCode = response.code();
+
+                        Headers headers = response.headers();
 
                         okhttp3.Response rawResponse = response.raw();
 

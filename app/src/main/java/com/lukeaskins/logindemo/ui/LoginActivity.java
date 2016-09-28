@@ -2,6 +2,7 @@ package com.lukeaskins.logindemo.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.v7.app.AppCompatActivity;
@@ -43,11 +44,11 @@ public class LoginActivity extends AppCompatActivity {
     @BindView(R.id.registerLink) TextView mRegisterLink;
 
     private static final String TAG = "LOGIN_ACTIVITY";
-
-
     public static final String URL_SIGN_IN = "users/sign_in";
     public static final String URL_BASE = "https://fierce-island-9273.herokuapp.com/";
 
+    public static SharedPreferences prefs;
+    public String ACCESS_TOKEN;
 
     public User user = new User();
     private String sessionEmail;
@@ -58,6 +59,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
+
 
 
 
@@ -124,25 +126,12 @@ public class LoginActivity extends AppCompatActivity {
 
                         Headers headers = response.headers();
                         UserLoginResponse userLoginResponse = response.body();
-                        String name = userLoginResponse.getUsers().getFirstName();
-
-                        String token = headers.get("Access-Token");
-                        String tokenType = headers.get("Token-Type");
-                        String client = headers.get("Client");
-                        String expiry = headers.get("Expiry");
-                        String uid = headers.get("Uid");
+                        processHeaders(headers);
 
                         Intent userIntent = new Intent(LoginActivity.this, UserActivity.class);
-
-
-                        userIntent.putExtra("accessToken", token);
-                        userIntent.putExtra("tokenType", tokenType);
-                        userIntent.putExtra("client", client);
-                        userIntent.putExtra("expiry", expiry);
-                        userIntent.putExtra("uid", uid);
                         userIntent.putExtra("users", serializeBooty(userLoginResponse));
                         LoginActivity.this.startActivity(userIntent);
-//                        finish();
+                        finish();
                     }
 
                     @Override
@@ -189,6 +178,27 @@ public class LoginActivity extends AppCompatActivity {
         Gson gson = new Gson();
         String s = gson.toJson(userLoginResponse);
         return s;
+    }
+
+    public void processHeaders(Headers headers){
+        String token = headers.get("Access-Token");
+        String tokenType = headers.get("Token-Type");
+        String client = headers.get("Client");
+        String expiry = headers.get("Expiry");
+        String uid = headers.get("Uid");
+
+        SharedPreferences.Editor editor = getSharedPreferences(ACCESS_TOKEN, Context.MODE_PRIVATE).edit();
+        editor.putString("Access-Token", token);
+        editor.putString("Token-Type", tokenType);
+        editor.putString("Client", client);
+        editor.putString("Expiry", expiry);
+        editor.putString("Uid", uid);
+        editor.apply();
+        Log.d(TAG, "Access-Token Saved: " + token);
+        Log.d(TAG, "Token-TYPE Saved: " + tokenType);
+        Log.d(TAG, "Client Saved: " + client);
+        Log.d(TAG, "Expiry Saved: " + expiry);
+        Log.d(TAG, "Uid Saved: " + uid);
     }
 
 }
