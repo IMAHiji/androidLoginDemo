@@ -16,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.lukeaskins.logindemo.LoginApplication;
 import com.lukeaskins.logindemo.R;
 import com.lukeaskins.logindemo.RegisterActivity;
 import com.lukeaskins.logindemo.lib.HHApiClient;
@@ -35,6 +36,8 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import static com.lukeaskins.logindemo.LoginApplication.getApiClient;
+
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -46,6 +49,7 @@ public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "LOGIN_ACTIVITY";
     public static final String URL_SIGN_IN = "users/sign_in";
     public static final String URL_BASE = "https://fierce-island-9273.herokuapp.com/";
+
 
     public static SharedPreferences prefs;
     public String ACCESS_TOKEN;
@@ -98,26 +102,15 @@ public class LoginActivity extends AppCompatActivity {
             if(isNetworkAvailable()){
                 //If available, Perform Login Request
 
-                HttpLoggingInterceptor logging  = new HttpLoggingInterceptor();
-                logging.setLevel(HttpLoggingInterceptor.Level.HEADERS);
-
-                OkHttpClient.Builder httpClient = new OkHttpClient().newBuilder();
-                httpClient.addInterceptor(logging);
-
-                //Start building a retrofit object.
-                Retrofit retrofit = new Retrofit.Builder()
-                        .baseUrl(URL_BASE)
-                        .addConverterFactory(GsonConverterFactory.create())
-                        .client(httpClient.build())
-                        .build();
 
                 //Generate a login from the input data
                 UserLoginRequest userLoginRequest = new UserLoginRequest();
                 userLoginRequest.setEmail(email);
                 userLoginRequest.setPassword(password);
 
-                //Build the service from your API Interface
-                HHApiClient service = retrofit.create(HHApiClient.class);
+
+                HHApiClient service = LoginApplication.getApiClient();
+
                 //Call your service with Retrofit: Call<your expected response class> = service.[whatever_you_named_your_endpoint_in_the_interface]
                 Call<UserLoginResponse> userLoginResponseCall =  service.signIn(userLoginRequest);
                 userLoginResponseCall.enqueue(new Callback<UserLoginResponse>() {
